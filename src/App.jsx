@@ -9,6 +9,7 @@ import ManualChallengePage from './components/ManualChallengePage.jsx'
 import HabitStreakPage from './components/HabitStreakPage.jsx'
 import MostPtsPage from './components/MostPtsPage.jsx'
 import TweaksPanel from './components/TweaksPanel.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 function computeStats(entries) {
   const playerStats = {}
@@ -220,30 +221,38 @@ export default function App() {
         />
       )}
       {view.page === 'steps' && (
-        <ManualChallengePage
-          challengeId="steps"
-          onBack={() => setView({ page: 'dashboard' })}
-          allEntries={entries}
-        />
+        <ErrorBoundary key="steps">
+          <ManualChallengePage
+            challengeId="steps"
+            onBack={() => setView({ page: 'dashboard' })}
+            allEntries={entries}
+          />
+        </ErrorBoundary>
       )}
       {view.page === 'water' && (
-        <ManualChallengePage
-          challengeId="water"
-          onBack={() => setView({ page: 'dashboard' })}
-          allEntries={entries}
-        />
+        <ErrorBoundary key="water">
+          <ManualChallengePage
+            challengeId="water"
+            onBack={() => setView({ page: 'dashboard' })}
+            allEntries={entries}
+          />
+        </ErrorBoundary>
       )}
       {view.page === 'habit' && (
-        <HabitStreakPage
-          onBack={() => setView({ page: 'dashboard' })}
-          allEntries={entries}
-        />
+        <ErrorBoundary key="habit">
+          <HabitStreakPage
+            onBack={() => setView({ page: 'dashboard' })}
+            allEntries={entries}
+          />
+        </ErrorBoundary>
       )}
       {view.page === 'pts' && (
-        <MostPtsPage
-          onBack={() => setView({ page: 'dashboard' })}
-          allEntries={entries}
-        />
+        <ErrorBoundary key="pts">
+          <MostPtsPage
+            onBack={() => setView({ page: 'dashboard' })}
+            allEntries={entries}
+          />
+        </ErrorBoundary>
       )}
 
       {showLog && (
