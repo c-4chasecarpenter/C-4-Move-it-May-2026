@@ -119,6 +119,8 @@ export default function App() {
     })
   }
 
+  useEffect(() => { window.scrollTo(0, 0) }, [view.page])
+
   const stats = useMemo(() => computeStats(entries), [entries])
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 
