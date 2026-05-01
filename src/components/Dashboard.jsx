@@ -1,4 +1,4 @@
-import { TEAMS_DATA, ACTIVITIES, getPlayerTeam, initials } from '../data.js'
+import { TEAMS_DATA, getPlayerTeam, initials } from '../data.js'
 
 function getHabitStreakLeaderboard(entries) {
   const HABIT_DAYS = ['2026-05-17','2026-05-18','2026-05-19','2026-05-20','2026-05-21','2026-05-22','2026-05-23']
@@ -33,7 +33,7 @@ function getChallengeLeaderboardFromData(challengeId, data, threshold, pts) {
 }
 
 export default function Dashboard({ stats, onTeamClick, onChallengeClick, onPlayerNameClick, allEntries, stepsData, waterData }) {
-  const { sortedTeams, sortedPlayers, catStats } = stats
+  const { sortedTeams, sortedPlayers } = stats
   const maxTeamPts = sortedTeams[0]?.[1].total || 1
 
   const challenges = [
@@ -51,79 +51,9 @@ export default function Dashboard({ stats, onTeamClick, onChallengeClick, onPlay
     return []
   }
 
-  const totalPts = sortedTeams.reduce((s, [, t]) => s + t.total, 0)
-  const totalPlayers = Object.values(TEAMS_DATA).reduce((s, t) => s + t.players.length, 0)
-  const activePlayers = Object.values(stats.playerStats).filter((p) => p.total > 0).length
-  const sortedCats = Object.entries(catStats).sort((a, b) => b[1].pts - a[1].pts)
-  const totalCatPts = sortedCats.reduce((s, [, c]) => s + c.pts, 0) || 1
 
   return (
     <div className="page">
-      {/* Summary */}
-      <div className="summary-strip">
-        <div className="summary-card">
-          <div className="summary-card-val">{totalPts}</div>
-          <div className="summary-card-label">Total Company Points</div>
-          <div className="summary-card-sub">{activePlayers} of {totalPlayers} players active</div>
-          <div className="summary-card-sub" style={{ marginTop: 2 }}>{totalPlayers > 0 ? (totalPts / totalPlayers).toFixed(1) : '0.0'} avg pts/player</div>
-        </div>
-        <div className="summary-card">
-          <div className="summary-card-val" style={{ color: sortedTeams[0] ? TEAMS_DATA[sortedTeams[0][0]].color : 'inherit' }}>
-            {sortedTeams[0]?.[0] || '—'}
-          </div>
-          <div className="summary-card-label">Leading Team</div>
-          <div className="summary-card-sub">{sortedTeams[0]?.[1].total || 0} pts</div>
-        </div>
-        <div className="summary-card">
-          <div className="summary-card-val" style={{ color: sortedPlayers[0] ? TEAMS_DATA[getPlayerTeam(sortedPlayers[0][0])]?.color : 'inherit' }}>
-            {sortedPlayers[0]?.[0] || '—'}
-          </div>
-          <div className="summary-card-label">Top Individual</div>
-          <div className="summary-card-sub">{sortedPlayers[0]?.[1].total || 0} pts</div>
-        </div>
-      </div>
-
-      {/* Weekly Challenges */}
-      <div className="section-title" style={{ fontSize: '16px' }}>Weekly Challenges</div>
-      <div className="challenges-strip">
-        {challenges.map((c, i) => {
-          const top3 = getChallengeTop3(c.id)
-          const medals = ['🥇','🥈','🥉']
-          return (
-            <div key={i} className={`challenge-card ${c.active ? 'challenge-active' : ''}`}
-              onClick={() => onChallengeClick(c.id)}
-              style={{ cursor: 'pointer' }}>
-              <div className="challenge-week">{c.active && <span className="live-dot"></span>}{c.week}</div>
-              <div style={{ fontSize: 20, marginTop: 4 }}>{c.emoji}</div>
-              <div className="challenge-title">{c.title}</div>
-              <div className="challenge-dates">{c.dates}</div>
-              {top3.length > 0 && (
-                <div style={{ marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {top3.map((p, ri) => {
-                    const team = TEAMS_DATA[p.team]
-                    const val = c.id === 'steps' ? `${(p.totalVal||0).toLocaleString()} steps` :
-                                c.id === 'water' ? `${(p.totalVal||0)} oz` :
-                                c.id === 'habit' ? `${p.activeDays}/7 days` :
-                                `${p.pts} pts`
-                    return (
-                      <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11 }}>
-                        <span>{medals[ri]}</span>
-                        <div style={{ width: 18, height: 18, borderRadius: '50%', background: team?.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{initials(p.name)}</div>
-                        <span style={{ flex: 1, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name.split(' ')[0]}</span>
-                        <span style={{ color: team?.color, fontWeight: 700 }}>{val}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-              <div className="challenge-click-hint" style={{ marginTop: top3.length > 0 ? 6 : 8 }}>
-                {c.manual ? 'Click to enter →' : 'Click to view →'}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
       {/* C-4 Highlights header */}
       <div className="highlights-header">C-4 Company Highlights</div>
       <div className="highlights-sub">Move it May 2026 — Live Leaderboard</div>
@@ -177,28 +107,51 @@ export default function Dashboard({ stats, onTeamClick, onChallengeClick, onPlay
           </table>
         </div>
 
-        {/* Points by Category */}
+        {/* Weekly Challenges */}
         <div className="card">
-          <div className="section-title" style={{ fontSize: '16px' }}>Points by Activity Category</div>
-          {sortedCats.length === 0
-            ? <div className="empty-state"><div className="empty-state-icon">📊</div><div className="empty-state-text">No activities logged yet</div></div>
-            : (
-              <div>
-                {sortedCats.map(([cat, cs]) => {
-                  const tierInfo = Object.entries(ACTIVITIES).find(([k]) => k === cat)
-                  const color = tierInfo ? tierInfo[1].color : '#888'
-                  return (
-                    <div key={cat} className="cat-row">
-                      <div className="cat-color" style={{ background: color }}></div>
-                      <div className="cat-name">{cat}</div>
-                      <div className="cat-pts">{cs.pts}</div>
-                      <div className="cat-pct">{Math.round(cs.pts / totalCatPts * 100)}%</div>
+          <div className="section-title" style={{ fontSize: '16px' }}>Weekly Challenges</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {challenges.map((c, i) => {
+              const top3 = getChallengeTop3(c.id)
+              const medals = ['🥇','🥈','🥉']
+              return (
+                <div key={i} className={`challenge-card ${c.active ? 'challenge-active' : ''}`}
+                  onClick={() => onChallengeClick(c.id)}
+                  style={{ cursor: 'pointer', margin: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>{c.emoji}</span>
+                    <div style={{ flex: 1 }}>
+                      <div className="challenge-week" style={{ marginBottom: 1 }}>{c.active && <span className="live-dot"></span>}{c.week}</div>
+                      <div className="challenge-title" style={{ fontSize: 13 }}>{c.title}</div>
                     </div>
-                  )
-                })}
-              </div>
-            )
-          }
+                    <div className="challenge-dates" style={{ whiteSpace: 'nowrap' }}>{c.dates}</div>
+                  </div>
+                  {top3.length > 0 && (
+                    <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 7, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {top3.map((p, ri) => {
+                        const team = TEAMS_DATA[p.team]
+                        const val = c.id === 'steps' ? `${(p.totalVal||0).toLocaleString()} steps` :
+                                    c.id === 'water' ? `${(p.totalVal||0)} oz` :
+                                    c.id === 'habit' ? `${p.activeDays}/7 days` :
+                                    `${p.pts} pts`
+                        return (
+                          <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11 }}>
+                            <span>{medals[ri]}</span>
+                            <div style={{ width: 16, height: 16, borderRadius: '50%', background: team?.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{initials(p.name)}</div>
+                            <span style={{ flex: 1, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name.split(' ')[0]}</span>
+                            <span style={{ color: team?.color, fontWeight: 700 }}>{val}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                  <div className="challenge-click-hint" style={{ marginTop: top3.length > 0 ? 6 : 4 }}>
+                    {c.manual ? 'Click to enter →' : 'Click to view →'}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
