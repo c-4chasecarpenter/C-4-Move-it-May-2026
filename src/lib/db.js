@@ -99,7 +99,7 @@ export function subscribeToEntries(onInsert, onUpdate, onDelete) {
 
 export function subscribeToChallengeEntries(challengeId, onChange) {
   return supabase
-    .channel(`challenge-${challengeId}`)
+    .channel(`challenge-${challengeId}-${Date.now()}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'challenge_entries',
       filter: `challenge_id=eq.${challengeId}` },
       () => onChange())
