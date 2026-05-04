@@ -34,6 +34,13 @@ function toRow(entry) {
   }
 }
 
+// Singleton channel — shared so we can both listen and broadcast on it
+let _entriesChannel = null
+function getEntriesChannel() {
+  if (!_entriesChannel) _entriesChannel = supabase.channel('entries-live')
+  return _entriesChannel
+}
+
 export async function loadEntries() {
   const { data, error } = await supabase
     .from('entries')
@@ -46,7 +53,10 @@ export async function loadEntries() {
 export async function addEntry(entry) {
   const { data, error } = await supabase.from('entries').insert(toRow(entry)).select().single()
   if (error) throw error
-  return toApp(data)
+  const saved = toApp(data)
+  // Broadcast to all connected users instantly (no DB replication lag)
+  getEntriesChannel().send({ type: 'broadcast', event: 'entry:insert', payload: saved })
+  return saved
 }
 
 export async function updateEntry(entry) {
@@ -55,11 +65,13 @@ export async function updateEntry(entry) {
     .update(toRow(entry))
     .eq('id', entry.id)
   if (error) throw error
+  getEntriesChannel().send({ type: 'broadcast', event: 'entry:update', payload: entry })
 }
 
 export async function deleteEntry(id) {
   const { error } = await supabase.from('entries').delete().eq('id', id)
   if (error) throw error
+  getEntriesChannel().send({ type: 'broadcast', event: 'entry:delete', payload: { id } })
 }
 
 export async function loadChallengeEntries(challengeId) {
@@ -87,8 +99,12 @@ export async function setChallengeValue(challengeId, player, date, value) {
 }
 
 export function subscribeToEntries(onInsert, onUpdate, onDelete) {
-  return supabase
-    .channel('entries-realtime')
+  return getEntriesChannel()
+    // Broadcast (instant — fires for all users the moment someone saves)
+    .on('broadcast', { event: 'entry:insert' }, ({ payload }) => onInsert(payload))
+    .on('broadcast', { event: 'entry:update' }, ({ payload }) => onUpdate(payload))
+    .on('broadcast', { event: 'entry:delete' }, ({ payload }) => onDelete(payload.id))
+    // postgres_changes fallback (catches reconnects / missed broadcasts)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'entries' },
       (payload) => onInsert(toApp(payload.new)))
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'entries' },
