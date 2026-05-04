@@ -200,7 +200,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .form-textarea{min-height:72px;resize:vertical;line-height:1.5}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,111,232,.12)}
 .form-input::placeholder,.form-textarea::placeholder{color:#B0B7C3}
-.search-results{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto;margin-top:-10px}
+.search-results{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto;margin-top:-10px;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .search-result-item{padding:10px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s;border-bottom:1px solid var(--border)}
 .search-result-item:last-child{border-bottom:none}
 .search-result-item:hover{background:var(--bg)}
