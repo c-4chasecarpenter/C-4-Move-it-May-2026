@@ -79,6 +79,10 @@ export default function App() {
       .then(data => { setEntries(data); setLoading(false) })
       .catch(err => { setError(err.message); setLoading(false) })
 
+    const pollInterval = setInterval(() => {
+      loadEntries().then(data => setEntries(data)).catch(() => {})
+    }, 5000)
+
     const channel = subscribeToEntries(
       (newEntry) => setEntries(prev => prev.some(e => e.id === newEntry.id) ? prev : [newEntry, ...prev]),
       (updatedEntry) => setEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e)),
@@ -105,6 +109,7 @@ export default function App() {
     window.parent.postMessage({ type: '__edit_mode_available' }, '*')
 
     return () => {
+      clearInterval(pollInterval)
       channel.unsubscribe()
       stepsChannel.unsubscribe()
       waterChannel.unsubscribe()
