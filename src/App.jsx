@@ -80,7 +80,7 @@ export default function App() {
       .catch(err => { setError(err.message); setLoading(false) })
 
     const channel = subscribeToEntries(
-      (newEntry) => setEntries(prev => [newEntry, ...prev]),
+      (newEntry) => setEntries(prev => prev.some(e => e.id === newEntry.id) ? prev : [newEntry, ...prev]),
       (updatedEntry) => setEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e)),
       (deletedId) => setEntries(prev => prev.filter(e => e.id !== deletedId))
     )
@@ -132,7 +132,8 @@ export default function App() {
 
   async function handleSaveEntry(entry) {
     try {
-      await addEntry(entry)
+      const saved = await addEntry(entry)
+      setEntries(prev => [saved, ...prev])
       setShowLog(false)
       showToast(`${entry.totalPts} pts logged for ${entry.player}!`)
     } catch(err) {
@@ -143,6 +144,7 @@ export default function App() {
   async function handleEditEntry(updatedEntry) {
     try {
       await updateEntry(updatedEntry)
+      setEntries(prev => prev.map(e => e.id === updatedEntry.id ? updatedEntry : e))
       setEditEntry(null)
       showToast('Entry updated!', '✅')
     } catch(err) {
@@ -153,6 +155,7 @@ export default function App() {
   async function handleDeleteEntry(entryId) {
     try {
       await deleteEntry(entryId)
+      setEntries(prev => prev.filter(e => e.id !== entryId))
       setEditEntry(null)
       showToast('Entry deleted', '🗑️')
     } catch(err) {

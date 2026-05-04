@@ -44,8 +44,9 @@ export async function loadEntries() {
 }
 
 export async function addEntry(entry) {
-  const { error } = await supabase.from('entries').insert(toRow(entry))
+  const { data, error } = await supabase.from('entries').insert(toRow(entry)).select().single()
   if (error) throw error
+  return toApp(data)
 }
 
 export async function updateEntry(entry) {
