@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { TEAMS_DATA, getPlayerTeam, initials } from '../data.js'
 
 function getHabitStreakLeaderboard(entries) {
@@ -36,6 +37,13 @@ export default function Dashboard({ stats, onTeamClick, onChallengeClick, onPlay
   const { sortedTeams, sortedPlayers } = stats
   const maxTeamPts = sortedTeams[0]?.[1].total || 1
 
+  const [playerSearch, setPlayerSearch] = useState('')
+  const [showPlayerResults, setShowPlayerResults] = useState(false)
+  const allPlayersList = Object.values(TEAMS_DATA).flatMap(t => t.players.map(p => ({ name: p, team: getPlayerTeam(p) }))).sort((a, b) => a.name.localeCompare(b.name))
+  const playerResults = playerSearch.trim().length > 0
+    ? allPlayersList.filter(p => p.name.toLowerCase().includes(playerSearch.toLowerCase())).slice(0, 8)
+    : []
+
   const challenges = [
     { week: 'Week 1', title: 'Steps Challenge',            dates: 'May 3–9',   emoji: '👟', id: 'steps', active: true,  manual: true  },
     { week: 'Week 2', title: 'Water Challenge (80oz/day)', dates: 'May 10–16', emoji: '💧', id: 'water', active: false, manual: true  },
@@ -57,6 +65,37 @@ export default function Dashboard({ stats, onTeamClick, onChallengeClick, onPlay
       {/* C-4 Highlights header */}
       <div className="highlights-header">C-4 Company Highlights</div>
       <div className="highlights-sub">Move it May 2026 — Live Leaderboard</div>
+
+      {/* Player search */}
+      <div style={{ position: 'relative', maxWidth: 420, margin: '14px auto 4px' }}>
+        <input
+          className="form-input"
+          placeholder="🔍  Search for a player…"
+          value={playerSearch}
+          onChange={e => { setPlayerSearch(e.target.value); setShowPlayerResults(true) }}
+          onFocus={() => setShowPlayerResults(true)}
+          onBlur={() => setTimeout(() => setShowPlayerResults(false), 150)}
+          style={{ fontSize: 14 }}
+        />
+        {showPlayerResults && playerResults.length > 0 && (
+          <div className="search-results" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200 }}>
+            {playerResults.map(p => {
+              const team = TEAMS_DATA[p.team]
+              return (
+                <div key={p.name} className="search-result-item" onMouseDown={() => {
+                  onPlayerNameClick(p.name, p.team)
+                  setPlayerSearch('')
+                  setShowPlayerResults(false)
+                }}>
+                  <div style={{ width: 28, height: 28, fontSize: 11, background: team?.color || '#888', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, flexShrink: 0 }}>{initials(p.name)}</div>
+                  <span>{p.name}</span>
+                  <span className="search-result-team">{p.team}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Team Podium */}
       <div className="section-title" style={{ fontSize: '16px' }}>Team Standings</div>
