@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { TEAMS_DATA, ACTIVITIES, BONUS_ACTIVITIES, getPlayerTeam, getWeekNum, initials, todayStr, calcTieredPts } from '../data.js'
 
-export default function LogModal({ onClose, onSave, defaultPlayer, allEntries }) {
+export default function LogModal({ onClose, onSave, defaultPlayer, defaultDate, allEntries }) {
   const allPlayersList = useMemo(() =>
     Object.values(TEAMS_DATA).flatMap((t) => t.players.map((p) => ({ name: p, team: getPlayerTeam(p) })))
       .sort((a, b) => a.name.localeCompare(b.name)),
@@ -10,7 +10,7 @@ export default function LogModal({ onClose, onSave, defaultPlayer, allEntries })
 
   const [search, setSearch] = useState(defaultPlayer || '')
   const [selectedPlayer, setSelectedPlayer] = useState(defaultPlayer || '')
-  const [date, setDate] = useState(todayStr())
+  const [date, setDate] = useState(defaultDate || todayStr())
   const [showSearch, setShowSearch] = useState(!defaultPlayer)
   const [activities, setActivities] = useState([])
   const [bonuses, setBonuses] = useState([])

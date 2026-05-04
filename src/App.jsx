@@ -66,6 +66,7 @@ export default function App() {
   const [waterData, setWaterData] = useState({})
   const [view, setView] = useState({ page: 'dashboard', teamName: null, highlightPlayer: null })
   const [showLog, setShowLog] = useState(false)
+  const [logPreset, setLogPreset] = useState(null)
   const [editEntry, setEditEntry] = useState(null)
   const [toast, setToast] = useState(null)
   const [showTweaks, setShowTweaks] = useState(false)
@@ -135,11 +136,17 @@ export default function App() {
     setTimeout(() => setToast(null), 3500)
   }
 
+  function handleLogDay(player, date) {
+    setLogPreset({ player, date })
+    setShowLog(true)
+  }
+
   async function handleSaveEntry(entry) {
     try {
       const saved = await addEntry(entry)
       setEntries(prev => [saved, ...prev])
       setShowLog(false)
+      setLogPreset(null)
       showToast(`${entry.totalPts} pts logged for ${entry.player}!`)
     } catch(err) {
       showToast('Failed to save — try again', '❌')
@@ -226,6 +233,7 @@ export default function App() {
           onBack={() => setView({ page: 'dashboard', teamName: null, highlightPlayer: null })}
           onEditEntry={setEditEntry}
           onDeleteEntry={handleDeleteEntry}
+          onLogDay={handleLogDay}
         />
       )}
       {view.page === 'steps' && (
@@ -265,9 +273,11 @@ export default function App() {
 
       {showLog && (
         <LogModal
-          onClose={() => setShowLog(false)}
+          onClose={() => { setShowLog(false); setLogPreset(null) }}
           onSave={handleSaveEntry}
           allEntries={entries}
+          defaultPlayer={logPreset?.player || ''}
+          defaultDate={logPreset?.date || ''}
         />
       )}
 

@@ -150,6 +150,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .mini-cal-day.no-pts .mini-cal-day-pts{display:none}
 .mini-cal-day-edit-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border-radius:6px;background:rgba(0,0,0,.25);transition:background .1s}
 .mini-cal-day-edit-btn:hover{background:rgba(0,0,0,.4)}
+.mini-cal-day-add-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;cursor:pointer;border-radius:6px;background:rgba(59,111,232,.1);color:var(--accent);transition:background .1s}
+.mini-cal-day.no-pts:hover{background:rgba(59,111,232,.06)}
 
 /* TOOLTIP */
 .cal-tooltip{position:fixed;z-index:9999;background:#1A1D27;color:#fff;border-radius:14px;padding:16px 18px;font-size:13px;pointer-events:auto;box-shadow:0 12px 32px rgba(0,0,0,.32);max-width:280px;min-width:210px;border:1px solid rgba(255,255,255,.08)}

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { TEAMS_DATA, initials } from '../data.js'
 import MiniCalendar from './MiniCalendar.jsx'
 
-export default function TeamPage({ teamName, stats, onBack, highlightPlayer, onEditEntry, onDeleteEntry, tweaks = {} }) {
+export default function TeamPage({ teamName, stats, onBack, highlightPlayer, onEditEntry, onDeleteEntry, tweaks = {}, onLogDay }) {
   const team = TEAMS_DATA[teamName]
   const teamStat = stats.teamStats[teamName]
   const rank = stats.sortedTeams.findIndex(([n]) => n === teamName) + 1
@@ -77,6 +77,7 @@ export default function TeamPage({ teamName, stats, onBack, highlightPlayer, onE
               dayMinHeight={dayMinHeight}
               dayFontSize={dayFontSize}
               onEditEntry={onEditEntry}
+              onLogDay={onLogDay ? (dateStr) => onLogDay(p.name, dateStr) : undefined}
             />
           </div>
         ))}

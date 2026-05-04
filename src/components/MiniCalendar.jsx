@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { MAY_DAYS, MONTH_START_DOF, mayDateStr } from '../data.js'
 import CalTooltip from './CalTooltip.jsx'
 
-export default function MiniCalendar({ playerDays, teamColor, onEditEntry, showPtsLabels = true, calPadding, dayMinHeight, dayFontSize }) {
+export default function MiniCalendar({ playerDays, teamColor, onEditEntry, onLogDay, showPtsLabels = true, calPadding, dayMinHeight, dayFontSize }) {
   const [tooltip, setTooltip] = useState(null)
   const [hoveredDay, setHoveredDay] = useState(null)
   const hideTimer = useRef(null)
@@ -52,14 +52,20 @@ export default function MiniCalendar({ playerDays, teamColor, onEditEntry, showP
               style={{
                 ...(isActive ? { background: getColor(pts), color: '#fff' } : {}),
                 minHeight: mh, fontSize: fs, position: 'relative',
+                cursor: onLogDay ? 'pointer' : undefined,
               }}
-              onMouseEnter={isActive ? (e) => {
-                cancelHide()
-                setHoveredDay(day)
-                const rect = e.currentTarget.getBoundingClientRect()
-                setTooltip({ day, entries, pos: { x: rect.left + rect.width / 2, y: rect.top, h: rect.height } })
-              } : undefined}
-              onMouseLeave={isActive ? scheduleHide : undefined}
+              onClick={() => onLogDay && onLogDay(dateKey)}
+              onMouseEnter={(e) => {
+                if (isActive) {
+                  cancelHide()
+                  setHoveredDay(day)
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setTooltip({ day, entries, pos: { x: rect.left + rect.width / 2, y: rect.top, h: rect.height } })
+                } else {
+                  setHoveredDay(day)
+                }
+              }}
+              onMouseLeave={() => { isActive ? scheduleHide() : setHoveredDay(null) }}
             >
               <span className="mini-cal-day-num">{day}</span>
               {isActive && showPtsLabels && !isHovered && <span className="mini-cal-day-pts">{pts}pt</span>}
@@ -70,6 +76,9 @@ export default function MiniCalendar({ playerDays, teamColor, onEditEntry, showP
                   onClick={(e) => { e.stopPropagation(); cancelHide(); setTooltip(null); setHoveredDay(null); onEditEntry(entries[0]) }}
                   title="Edit entries for this day"
                 >✏️</span>
+              )}
+              {!isActive && isHovered && onLogDay && (
+                <span className="mini-cal-day-add-btn" title="Log points for this day">+</span>
               )}
             </div>
           )
